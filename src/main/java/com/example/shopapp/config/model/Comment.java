@@ -18,6 +18,8 @@ public class Comment {
     @Column(name = "comment_id")
     private Long id;
 
+    private int rating;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
