@@ -45,7 +45,9 @@ public class SecurityConfig {
                                 "/api/users",
                                 "/api/users/**",
                                 "/api/payment",
-                                "/api/payment/create-checkout-session"
+                                "/api/payment/create-checkout-session",
+                                "/api/shop",
+                                "/api/shop/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

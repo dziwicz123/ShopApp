@@ -22,10 +22,27 @@ class ShopAppApplicationTests {
     @Autowired
     private CommentRepository commentRepository;
 
+    @Autowired
+    private ShopRepository shopRepository;
+
     @Test
     void contextLoads() {
-        Faker faker = new Faker();
+        Faker faker = new Faker(new Locale("pl"));
         Random random = new Random();
+
+        // Dodanie 20 sklepów w Polsce
+        List<Shop> shops = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            Shop shop = Shop.builder()
+                    .street(faker.address().streetAddress())
+                    .city(faker.address().city())
+                    .postalCode(faker.address().zipCode())
+                    .latitude(generateRandomLatitude())
+                    .longitude(generateRandomLongitude())
+                    .build();
+            shopRepository.save(shop);
+            shops.add(shop);
+        }
 
         // Pobierz listę produktów o ID od 1 do 24
         List<Long> productIds = LongStream.rangeClosed(1, 24).boxed().collect(Collectors.toList());
@@ -143,5 +160,18 @@ class ShopAppApplicationTests {
             }
         }
         return 5; // W przypadku błędów zaokrąglenia
+    }
+
+    // Funkcje pomocnicze do generowania losowych współrzędnych geograficznych dla Polski
+    private double generateRandomLatitude() {
+        double minLat = 49.0;  // Minimalna szerokość geograficzna dla Polski
+        double maxLat = 54.8;  // Maksymalna szerokość geograficzna dla Polski
+        return minLat + (maxLat - minLat) * new Random().nextDouble();
+    }
+
+    private double generateRandomLongitude() {
+        double minLon = 14.1;  // Minimalna długość geograficzna dla Polski
+        double maxLon = 24.15; // Maksymalna długość geograficzna dla Polski
+        return minLon + (maxLon - minLon) * new Random().nextDouble();
     }
 }

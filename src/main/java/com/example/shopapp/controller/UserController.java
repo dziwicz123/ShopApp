@@ -40,7 +40,6 @@ public class UserController {
             response.setMessage("Login successful");
             response.setStatus(true);
             response.setUser(user); // Set user in response
-
             return ResponseEntity.ok(response);
         } else {
             response.setMessage("Invalid email or password");
