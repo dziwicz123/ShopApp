@@ -1,7 +1,9 @@
 package com.example.shopapp.controller;
 
 import com.example.shopapp.config.model.ApiResponse;
+import com.example.shopapp.config.model.Basket;
 import com.example.shopapp.config.model.User;
+import com.example.shopapp.repo.BasketRepository;
 import com.example.shopapp.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private BasketRepository basketRepository;
 
     @GetMapping("/api")
     public ApiResponse homeController() {
@@ -37,9 +42,25 @@ public class UserController {
         ApiResponse response = new ApiResponse();
         if (user != null) {
             session.setAttribute("user", user);
+
+            // Retrieve the user's active basket (state = false indicates active basket)
+            Basket activeBasket = basketRepository.findByUserAndState(user, false);
+
+            // If no active basket exists, create one
+            if (activeBasket == null) {
+                activeBasket = new Basket();
+                activeBasket.setUser(user);
+                activeBasket.setState(false);
+                activeBasket.setTotalPrice(0.0f);
+                basketRepository.save(activeBasket);
+            }
+
+            // Set the basketId in the response
             response.setMessage("Login successful");
             response.setStatus(true);
-            response.setUser(user); // Set user in response
+            response.setUser(user);
+            response.setBasketId(activeBasket.getId());
+
             return ResponseEntity.ok(response);
         } else {
             response.setMessage("Invalid email or password");

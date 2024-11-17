@@ -35,6 +35,9 @@ public class OrderDetailsController {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ShopRepository shopRepository;
+
     @PostMapping
     public ResponseEntity<?> createOrderDetails(@RequestBody OrderDetailsRequest request) {
         logger.info("Received order creation request for email: {}", request.getEmail());
@@ -56,28 +59,57 @@ public class OrderDetailsController {
         Basket basket = optionalBasket.get();
         logger.info("Retrieved basket for user: {}", user.getEmail());
 
-        // 3. Create and Save Address
-        Address address = new Address();
-        try {
-            address.setCity(request.getAddress().getCity());
-            address.setStreet(request.getAddress().getStreet());
-            address.setPostalCode(request.getAddress().getPostalCode());
-            address.setUser(user);
-            addressRepository.save(address);
-            logger.info("Address saved successfully for user: {}", user.getEmail());
-        } catch (Exception e) {
-            logger.error("Error saving address for user: {}", user.getEmail(), e);
-            return ResponseEntity.status(500).body("Failed to save address");
+        // 3. Handle Delivery Type and Address
+        OrderDetails orderDetails = new OrderDetails();
+        orderDetails.setDeliveryType(request.getDeliveryType()); // Set deliveryType from request
+
+        if (request.getDeliveryType() == DeliveryType.DELIVERY) {
+            if (request.getAddress() == null) {
+                logger.error("Address is required for delivery");
+                return ResponseEntity.status(400).body("Address is required for delivery");
+            }
+
+            // Create and Save Address
+            Address address = new Address();
+            try {
+                address.setCity(request.getAddress().getCity());
+                address.setStreet(request.getAddress().getStreet());
+                address.setPostalCode(request.getAddress().getPostalCode());
+                address.setUser(user);
+                addressRepository.save(address);
+                logger.info("Address saved successfully for user: {}", user.getEmail());
+                orderDetails.setAddress(address); // Set the saved address in orderDetails
+            } catch (Exception e) {
+                logger.error("Error saving address for user: {}", user.getEmail(), e);
+                return ResponseEntity.status(500).body("Failed to save address");
+            }
+        } else if (request.getDeliveryType() == DeliveryType.SHOP) {
+            if (request.getShopId() == null) {
+                logger.error("Shop ID is required for shop pickup");
+                return ResponseEntity.status(400).body("Shop ID is required for shop pickup");
+            }
+
+            // Retrieve Shop
+            Optional<Shop> optionalShop = shopRepository.findById(request.getShopId());
+            if (!optionalShop.isPresent()) {
+                logger.error("Shop not found with ID: {}", request.getShopId());
+                return ResponseEntity.status(404).body("Shop not found");
+            }
+            Shop shop = optionalShop.get();
+            orderDetails.setShop(shop);
+            orderDetails.setAddress(null);
+            logger.info("Delivery type is SHOP; associated with shop ID: {}", shop.getId());
+        } else {
+            logger.error("Invalid delivery type: {}", request.getDeliveryType());
+            return ResponseEntity.status(400).body("Invalid delivery type");
         }
 
         // 4. Create Order Details
-        OrderDetails orderDetails = new OrderDetails();
         orderDetails.setBasket(basket);
         orderDetails.setOrderDate(LocalDateTime.now());
         orderDetails.setShipDate(null); // Set if applicable
         orderDetails.setState(OrderState.PENDING);
         orderDetails.setType(PaymentStatus.UNPAID);
-        orderDetails.setAddress(address); // Set the saved address directly
 
         // Save Order Details
         try {
@@ -96,22 +128,12 @@ public class OrderDetailsController {
                 Product product = optionalProduct.get();
                 int quantity = productDTO.getQuantity();
 
-                // Check if the product already exists in the basket
-                Optional<BasketProduct> optionalBasketProduct = basket.getBasketProducts().stream()
-                        .filter(bp -> bp.getProduct().getId().equals(product.getId()))
-                        .findFirst();
-
-                BasketProduct basketProduct;
-                if (optionalBasketProduct.isPresent()) {
-                    basketProduct = optionalBasketProduct.get();
-                    basketProduct.setQuantity(basketProduct.getQuantity() + quantity);
-                } else {
-                    basketProduct = new BasketProduct();
-                    basketProduct.setBasket(basket);
-                    basketProduct.setProduct(product);
-                    basketProduct.setQuantity(quantity);
-                    basket.getBasketProducts().add(basketProduct);
-                }
+                // Create BasketProduct
+                BasketProduct basketProduct = new BasketProduct();
+                basketProduct.setBasket(basket);
+                basketProduct.setProduct(product);
+                basketProduct.setQuantity(quantity);
+                basket.getBasketProducts().add(basketProduct);
 
                 totalPrice += product.getPrice() * quantity;
                 logger.info("Added product {} to basket for user {}", product.getProductName(), user.getEmail());
@@ -146,6 +168,7 @@ public class OrderDetailsController {
 
         return ResponseEntity.ok(orderDetails);
     }
+
 
     @PatchMapping("/update-payment-status/{basketId}")
     public ResponseEntity<?> updatePaymentStatus(@PathVariable Long basketId, @RequestBody Map<String, String> payload) {

@@ -1,14 +1,25 @@
 package com.example.shopapp.DTO;
 
+import com.example.shopapp.config.model.DeliveryType; // Import DeliveryType enum
 import java.util.List;
 
 public class OrderDetailsRequest {
     private Long basketId;
     private AddressDTO address;
     private List<ProductDTO> products;
-    private String email; // Add email field
+    private String email;
+    private DeliveryType deliveryType;
+    private Long shopId;
 
-    // Getters and Setters
+
+    public Long getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(Long shopId) {
+        this.shopId = shopId;
+    }
+
     public Long getBasketId() {
         return basketId;
     }
@@ -39,6 +50,46 @@ public class OrderDetailsRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public DeliveryType getDeliveryType() {
+        return deliveryType;
+    }
+
+    public void setDeliveryType(DeliveryType deliveryType) {
+        this.deliveryType = deliveryType;
+    }
+
+    // Inner classes
+    public static class AddressDTO {
+        private String street;
+        private String city;
+        private String postalCode;
+
+        // Getters and Setters
+        public String getStreet() {
+            return street;
+        }
+
+        public void setStreet(String street) {
+            this.street = street;
+        }
+
+        public String getCity() {
+            return city;
+        }
+
+        public void setCity(String city) {
+            this.city = city;
+        }
+
+        public String getPostalCode() {
+            return postalCode;
+        }
+
+        public void setPostalCode(String postalCode) {
+            this.postalCode = postalCode;
+        }
     }
 
     public static class ProductDTO {

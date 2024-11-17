@@ -35,7 +35,14 @@ public class OrderDetails {
     @Enumerated(EnumType.STRING)
     private PaymentStatus type;
 
+    @Enumerated(EnumType.STRING)
+    private DeliveryType deliveryType;
+
     @ManyToOne
     @JoinColumn(name = "address_id")
     private Address address;
+
+    @ManyToOne
+    @JoinColumn(name = "shop_id")
+    private Shop shop;
 }
