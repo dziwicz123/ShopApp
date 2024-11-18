@@ -13,13 +13,13 @@ public class StripeController {
     @Autowired
     private StripeService stripeService;
 
-    @PostMapping("/create-checkout-session")
-    public ResponseEntity<?> createCheckoutSession(@RequestBody CheckoutRequest request) {
+    @PostMapping("/create-payment-intent")
+    public ResponseEntity<?> createPaymentIntent(@RequestBody CheckoutRequest request) {
         try {
-            Session session = stripeService.createCheckoutSession(request.getAmount(), request.getCurrency());
-            return ResponseEntity.ok(new CheckoutResponse(session.getId()));
+            String clientSecret = stripeService.createPaymentIntent(request.getAmount(), request.getCurrency());
+            return ResponseEntity.ok(new CheckoutResponse(clientSecret));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error creating Stripe Checkout session");
+            return ResponseEntity.status(500).body("Error creating payment intent");
         }
     }
 
@@ -47,16 +47,17 @@ public class StripeController {
     }
 
     public static class CheckoutResponse {
-        private String sessionId;
+        private String clientSecret;
 
-        public CheckoutResponse(String sessionId) {
-            this.sessionId = sessionId;
+        public CheckoutResponse(String clientSecret) {
+            this.clientSecret = clientSecret;
         }
 
         // Getter
 
-        public String getSessionId() {
-            return sessionId;
+        public String getClientSecret() {
+            return clientSecret;
         }
     }
 }
+
