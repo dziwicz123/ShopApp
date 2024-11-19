@@ -204,6 +204,20 @@ public class OrderDetailsController {
         return orderDetailsRepository.findAll();
     }
 
+    @GetMapping("/user/{email}")
+    public ResponseEntity<?> getOrdersByUser(@PathVariable String email) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            logger.error("User not found with email: {}", email);
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        List<OrderDetails> orders = orderDetailsRepository.findByBasketUser(user);
+        logger.info("Retrieved {} orders for user: {}", orders.size(), email);
+        return ResponseEntity.ok(orders);
+    }
+
+
     @PatchMapping("/update/{id}")
     public ResponseEntity<OrderDetails> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, OrderState> payload) {
         OrderState state = payload.get("state");

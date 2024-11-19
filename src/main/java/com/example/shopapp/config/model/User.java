@@ -1,5 +1,6 @@
 package com.example.shopapp.config.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,13 +33,14 @@ public class User {
     private String password;
 
     @OneToMany(mappedBy = "user")
-    @JsonIgnoreProperties("user")
+    @JsonIgnore // Prevent circular reference
     private List<Basket> baskets;
 
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
     @OneToMany(mappedBy = "user")
-    @JsonIgnoreProperties("user")
+    @JsonIgnore // Prevent circular reference
     private List<Comment> comments;
 }
+

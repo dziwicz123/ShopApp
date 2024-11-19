@@ -1,5 +1,6 @@
 package com.example.shopapp.config.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,6 +41,6 @@ public class Product {
     private Float cutPrice;
 
     @OneToMany(mappedBy = "product")
-    @JsonIgnoreProperties("product")
+    @JsonIgnore // Prevent circular reference
     private List<Comment> comments;
 }

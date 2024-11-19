@@ -1,5 +1,6 @@
 package com.example.shopapp.config.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,11 +26,12 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    @JsonIgnoreProperties("comments")
+    @JsonIgnore // Prevent circular reference
     private Product product;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnoreProperties("comments")
+    @JsonIgnore // Prevent circular reference
     private User user;
 }
+
