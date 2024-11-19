@@ -1,5 +1,6 @@
 package com.example.shopapp.controller;
 
+import com.example.shopapp.DTO.ProductDTO;
 import com.example.shopapp.config.model.Product;
 import com.example.shopapp.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,5 +43,25 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/dto")
+    public List<ProductDTO> getAllProductDTOs() {
+        return productService.getAllProductDTOs();
+    }
+
+    @GetMapping("/{id}/dto")
+    public ResponseEntity<ProductDTO> getProductDTOById(@PathVariable Long id) {
+        Product product = productService.getProductById(id);
+        ProductDTO productDTO = new ProductDTO(
+                product.getId(),
+                product.getProductName(),
+                productService.calculateAverageRating(product),
+                product.getPrice(),
+                product.getImage(),
+                product.getCutPrice(),
+                product.getComments() != null ? product.getComments().size() : 0
+        );
+        return ResponseEntity.ok(productDTO);
     }
 }

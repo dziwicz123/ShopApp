@@ -1,5 +1,6 @@
 package com.example.shopapp.config.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -26,12 +27,12 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    @JsonIgnore // Prevent circular reference
+    @JsonBackReference
     private Product product;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnore // Prevent circular reference
+    @JsonBackReference
     private User user;
 }
 
