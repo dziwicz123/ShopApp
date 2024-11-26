@@ -50,6 +50,24 @@ public class ProductController {
         return productService.getAllProductDTOs();
     }
 
+    @GetMapping("/filter")
+    public List<ProductDTO> filterProducts(
+            @RequestParam(required = false) List<Long> categoryIds,
+            @RequestParam(required = false) List<String> producers,
+            @RequestParam(required = false) String searchQuery,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice
+    ) {
+        System.out.println("Received parameters:");
+        System.out.println("categoryIds: " + categoryIds);
+        System.out.println("producers: " + producers);
+        System.out.println("searchQuery: " + searchQuery);
+        System.out.println("minPrice: " + minPrice);
+        System.out.println("maxPrice: " + maxPrice);
+
+        return productService.filterProducts(categoryIds, producers, searchQuery, minPrice, maxPrice);
+    }
+
     @GetMapping("/{id}/dto")
     public ResponseEntity<ProductDTO> getProductDTOById(@PathVariable Long id) {
         Product product = productService.getProductById(id);
@@ -64,4 +82,18 @@ public class ProductController {
         );
         return ResponseEntity.ok(productDTO);
     }
+
+    @GetMapping("/producers")
+    public ResponseEntity<List<String>> getProducersByFilters(
+            @RequestParam(required = false) List<Long> categoryIds,
+            @RequestParam(required = false) String searchQuery
+    ) {
+        System.out.println("Received parameters for producers:");
+        System.out.println("categoryIds: " + categoryIds);
+        System.out.println("searchQuery: " + searchQuery);
+
+        List<String> producers = productService.getProducersByFilters(categoryIds, searchQuery);
+        return ResponseEntity.ok(producers);
+    }
+
 }

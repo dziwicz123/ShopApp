@@ -38,6 +38,8 @@ public class Product {
 
     private String image;
 
+    private String producer;
+
     @Column(name = "cut_price")
     private Float cutPrice;
 
