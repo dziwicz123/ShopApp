@@ -1,5 +1,6 @@
 package com.example.shopapp.controller;
 
+import com.example.shopapp.DTO.ShopDTO;
 import com.example.shopapp.config.model.Shop;
 import com.example.shopapp.service.ShopService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,19 @@ public class ShopController {
 
     // Get all shops
     @GetMapping
-    public ResponseEntity<List<Shop>> getAllShops() {
-        List<Shop> shops = shopService.getAllShops();
+    public ResponseEntity<List<ShopDTO>> getAllShops() {
+        List<ShopDTO> shops = shopService.getAllShops()
+                .stream()
+                .map(shop -> ShopDTO.builder()
+                        .id(shop.getId())
+                        .street(shop.getStreet())
+                        .city(shop.getCity())
+                        .postalCode(shop.getPostalCode())
+                        .latitude(shop.getLatitude())
+                        .longitude(shop.getLongitude())
+                        .build())
+                .toList();
+
         return ResponseEntity.ok(shops);
     }
 

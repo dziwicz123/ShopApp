@@ -1,5 +1,6 @@
 package com.example.shopapp.service;
 
+import com.example.shopapp.DTO.ShopDTO;
 import com.example.shopapp.config.model.Shop;
 import com.example.shopapp.repo.ShopRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +17,6 @@ public class ShopService {
     @Autowired
     public ShopService(ShopRepository shopRepository) {
         this.shopRepository = shopRepository;
-    }
-
-    // Retrieve all shops
-    public List<Shop> getAllShops() {
-        return shopRepository.findAll();
     }
 
     // Retrieve a shop by ID
@@ -44,6 +40,21 @@ public class ShopService {
             return shopRepository.save(shop);
         }).orElseThrow(() -> new RuntimeException("Shop not found with id " + id));
     }
+
+    public List<ShopDTO> getAllShops() {
+        return shopRepository.findAll()
+                .stream()
+                .map(shop -> ShopDTO.builder()
+                        .id(shop.getId())
+                        .street(shop.getStreet())
+                        .city(shop.getCity())
+                        .postalCode(shop.getPostalCode())
+                        .latitude(shop.getLatitude())
+                        .longitude(shop.getLongitude())
+                        .build())
+                .toList();
+    }
+
 
     // Delete a shop by ID
     public void deleteShop(Long id) {
