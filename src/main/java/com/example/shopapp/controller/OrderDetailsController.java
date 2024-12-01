@@ -235,4 +235,52 @@ public class OrderDetailsController {
         logger.info("Order status updated to {} for order ID: {}", state, id);
         return ResponseEntity.ok(orderDetails);
     }
+
+    @PatchMapping("/{id}/add-issue")
+    public ResponseEntity<?> addIssueToOrder(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        Optional<OrderDetails> optionalOrder = orderDetailsRepository.findById(id);
+
+        if (!optionalOrder.isPresent()) {
+            return ResponseEntity.status(404).body("Order not found");
+        }
+
+        OrderDetails orderDetails = optionalOrder.get();
+
+        String issueTypeStr = payload.get("orderIssueType");
+        String description = payload.get("description");
+
+        if (issueTypeStr == null || description == null) {
+            return ResponseEntity.status(400).body("Issue type and description are required");
+        }
+
+        try {
+            OrderIssueType issueType = OrderIssueType.valueOf(issueTypeStr);
+
+            OrderIssue issue = new OrderIssue();
+            issue.setOrderIssueType(issueType);
+            issue.setDescription(description);
+            issue.setOrderDetails(orderDetails);
+
+            orderDetails.getIssues().add(issue);
+
+            orderDetailsRepository.save(orderDetails);
+
+            return ResponseEntity.ok(orderDetails);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body("Invalid issue type");
+        }
+    }
+
+    @GetMapping("/{id}/issues")
+    public ResponseEntity<?> getOrderIssues(@PathVariable Long id) {
+        Optional<OrderDetails> optionalOrder = orderDetailsRepository.findById(id);
+
+        if (!optionalOrder.isPresent()) {
+            return ResponseEntity.status(404).body("Order not found");
+        }
+
+        OrderDetails orderDetails = optionalOrder.get();
+        return ResponseEntity.ok(orderDetails.getIssues());
+    }
+
 }
