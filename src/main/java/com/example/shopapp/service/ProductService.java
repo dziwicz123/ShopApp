@@ -3,11 +3,15 @@ package com.example.shopapp.service;
 import com.example.shopapp.DTO.ProductDTO;
 import com.example.shopapp.config.model.Product;
 import com.example.shopapp.config.model.Comment;
+import com.example.shopapp.config.model.ProductQuantity;
 import com.example.shopapp.repo.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,6 +74,44 @@ public class ProductService {
         }
 
         return sum / product.getComments().size(); // Calculate average
+    }
+
+    public List<Product> updateProductsQuantity(List<Map<String, String>> productsData) {
+        Map<Long, String> productsToUpdate = new HashMap<>();
+
+        // Grupowanie danych według id produktu
+        for (Map<String, String> data : productsData) {
+            Long id = Long.parseLong(data.get("id"));
+            String quantityType = data.get("quantityType");
+            productsToUpdate.put(id, quantityType);
+        }
+
+        // Pobieranie produktów z bazy
+        List<Product> products = productRepository.findAllById(productsToUpdate.keySet());
+
+        if (products.size() != productsToUpdate.size()) {
+            throw new RuntimeException("Niektóre produkty nie zostały znalezione");
+        }
+
+        // Aktualizacja ilości dla każdego produktu
+        for (Product product : products) {
+            String quantityType = productsToUpdate.get(product.getId());
+            try {
+                ProductQuantity newQuantity = ProductQuantity.valueOf(quantityType);
+                product.setQuantityType(newQuantity);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Nieprawidłowy typ ilości dla produktu o id " + product.getId());
+            }
+        }
+
+        // Zapisanie produktów
+        productRepository.saveAll(products);
+
+        // Pobranie i zwrócenie produktów w posortowanej kolejności
+        return productRepository.findAllById(productsToUpdate.keySet())
+                .stream()
+                .sorted(Comparator.comparing(Product::getId))
+                .toList();
     }
 
     public List<ProductDTO> filterProducts(List<Long> categoryIds, List<String> producers, String searchQuery, Double minPrice, Double maxPrice) {

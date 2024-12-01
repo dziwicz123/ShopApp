@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -66,6 +67,18 @@ public class ProductController {
         System.out.println("maxPrice: " + maxPrice);
 
         return productService.filterProducts(categoryIds, producers, searchQuery, minPrice, maxPrice);
+    }
+
+    @PatchMapping("/quantity")
+    public ResponseEntity<List<Product>> updateProductsQuantity(@RequestBody List<Map<String, String>> payload) {
+        try {
+            List<Product> updatedProducts = productService.updateProductsQuantity(payload);
+            return ResponseEntity.ok(updatedProducts);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/dto")

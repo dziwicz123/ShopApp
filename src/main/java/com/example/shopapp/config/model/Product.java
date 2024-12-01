@@ -40,6 +40,9 @@ public class Product {
 
     private String producer;
 
+    @Enumerated(EnumType.STRING)
+    private ProductQuantity quantityType;
+
     @Column(name = "cut_price")
     private Float cutPrice;
 
